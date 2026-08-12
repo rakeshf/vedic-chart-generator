@@ -164,15 +164,15 @@ function dms(degrees, minutes = 0) {
 
 const sampleResult = {
   birth: {
-    name: "Rupali Falke",
-    date: "1984-09-28",
-    time: "03:55:00",
-    gender: "Female",
+    name: "Example Person",
+    date: "1990-01-01",
+    time: "12:00:00",
+    gender: "Unspecified",
     timezone: "Asia/Kolkata",
-    city: "Bhandara, Maharashtra, India",
-    latitude: 21.17,
-    longitude: 79.650002,
-    utc: "1984-09-27T22:25:00+00:00",
+    city: "Delhi, India",
+    latitude: 28.6139,
+    longitude: 77.209,
+    utc: "1990-01-01T06:30:00+00:00",
   },
   options: { node: "true", ayanamsha: "lahiri" },
   metadata: {
@@ -745,15 +745,13 @@ function renderActiveChart() {
   }
 
   const chart = state.result.charts[state.activeChart];
-  const name = state.result.birth?.name || "Native";
-  const title = `${name} - ${state.activeChart}`;
+  const title = state.activeChart;
 
   chartTitle.textContent = [
-    state.result.birth?.date,
-    state.result.birth?.time,
-    state.result.birth?.gender,
-    state.result.birth?.city,
-    state.result.birth?.timezone,
+    state.result.options?.ayanamsha ? `Ayanamsha: ${state.result.options.ayanamsha}` : "",
+    state.result.metadata?.house_system
+      ? `House system: ${state.result.metadata.house_system.replace("_", " ")}`
+      : "",
   ]
     .filter(Boolean)
     .join(" | ");
@@ -769,8 +767,6 @@ function loadResult(result) {
   state.result = result;
   setActiveChart("D1");
   showValidation([], "Chart JSON validated and rendered.");
-  if (result.birth?.name) nameInput.value = result.birth.name;
-  if (result.birth?.date) dateInput.value = result.birth.date;
   renderNumerology();
   renderActiveChart();
 }
@@ -845,7 +841,6 @@ renderJsonButton.addEventListener("click", () => {
   try {
     const result = JSON.parse(chartJson.value);
     loadResult(result);
-    if (result.birth) cacheChartResult(result.birth, result);
   } catch (error) {
     showValidation([`Invalid JSON: ${error.message}`]);
   }

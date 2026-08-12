@@ -23,12 +23,12 @@ pip install -e ".[dev]"
 
 ```bash
 vedic-chart \
-  --name "Rakeesh Falke" \
-  --date 1983-09-18 \
-  --time 16:15:00 \
+  --name "Example Person" \
+  --date 1990-01-01 \
+  --time 12:00:00 \
   --timezone Asia/Kolkata \
-  --latitude 21.1458 \
-  --longitude 79.0882 \
+  --latitude 28.6139 \
+  --longitude 77.2090 \
   --output output
 ```
 
@@ -77,12 +77,12 @@ from datetime import date, time
 from vedic_chart import BirthData, ChartOptions, generate_charts
 
 birth = BirthData(
-    name="Example",
-    date=date(1983, 9, 18),
-    time=time(16, 15),
+    name="Example Person",
+    date=date(1990, 1, 1),
+    time=time(12, 0),
     timezone="Asia/Kolkata",
-    latitude=21.1458,
-    longitude=79.0882,
+    latitude=28.6139,
+    longitude=77.2090,
 )
 
 result = generate_charts(birth, ChartOptions(node="true"))
