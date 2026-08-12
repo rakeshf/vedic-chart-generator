@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Birth Chart</title>
+    <link rel="stylesheet" href="styles.css?v=3" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <aside class="control-panel" aria-label="Chart inputs">
+          <div>
+            <p class="eyebrow">Vedic Chart Generator</p>
+            <h1>Birth Chart</h1>
+          </div>
+
+          <form id="birth-form" novalidate>
+            <label>
+              Name
+              <input id="name" name="name" list="saved-names" autocomplete="name" required />
+              <datalist id="saved-names"></datalist>
+            </label>
+
+            <div class="field-grid">
+              <label>
+                Date
+                <input id="date" name="date" type="date" required />
+              </label>
+              <label>
+                Time
+                <input id="time" name="time" type="time" step="1" required />
+              </label>
+            </div>
+
+            <label>
+              Gender
+              <select id="gender" name="gender">
+                <option value="" selected>Select</option>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+              </select>
+            </label>
+
+            <label>
+              City
+              <input
+                id="city"
+                name="city"
+                list="indian-cities"
+                placeholder="Bhandara"
+                autocomplete="address-level2"
+              />
+              <datalist id="indian-cities"></datalist>
+            </label>
+
+            <label>
+              Timezone
+              <input
+                id="timezone"
+                name="timezone"
+                placeholder="Asia/Kolkata"
+                required
+              />
+            </label>
+
+            <div class="field-grid">
+              <label>
+                Latitude
+                <input
+                  id="latitude"
+                  name="latitude"
+                  type="number"
+                  min="-90"
+                  max="90"
+                  step="0.000001"
+                  required
+                />
+              </label>
+              <label>
+                Longitude
+                <input
+                  id="longitude"
+                  name="longitude"
+                  type="number"
+                  min="-180"
+                  max="180"
+                  step="0.000001"
+                  required
+                />
+              </label>
+            </div>
+
+            <button type="submit">Generate Chart</button>
+          </form>
+
+          <section class="numerology-panel" aria-label="Chaldean numerology">
+            <div class="panel-heading">
+              <h2>Chaldean</h2>
+              <span>Name + DOB</span>
+            </div>
+            <div class="number-grid">
+              <div>
+                <span>Name No.</span>
+                <strong id="name-number">-</strong>
+                <small id="name-compound">Total -</small>
+              </div>
+              <div>
+                <span>DOB No.</span>
+                <strong id="dob-number">-</strong>
+                <small id="dob-compound">Day -</small>
+              </div>
+              <div>
+                <span>Life Path</span>
+                <strong id="life-path-number">-</strong>
+                <small id="life-path-compound">Total -</small>
+              </div>
+            </div>
+            <div id="name-breakdown" class="name-breakdown"></div>
+          </section>
+
+          <section class="loshu-panel" aria-label="Lo Shu grid">
+            <div class="panel-heading">
+              <h2>Lo Shu Grid</h2>
+              <span>DOB digits</span>
+            </div>
+            <div class="loshu-grid" aria-label="Lo Shu grid">
+              <div class="loshu-cell" data-loshu="4"><span>4</span><strong id="loshu-4">-</strong></div>
+              <div class="loshu-cell" data-loshu="9"><span>9</span><strong id="loshu-9">-</strong></div>
+              <div class="loshu-cell" data-loshu="2"><span>2</span><strong id="loshu-2">-</strong></div>
+              <div class="loshu-cell" data-loshu="3"><span>3</span><strong id="loshu-3">-</strong></div>
+              <div class="loshu-cell" data-loshu="5"><span>5</span><strong id="loshu-5">-</strong></div>
+              <div class="loshu-cell" data-loshu="7"><span>7</span><strong id="loshu-7">-</strong></div>
+              <div class="loshu-cell" data-loshu="8"><span>8</span><strong id="loshu-8">-</strong></div>
+              <div class="loshu-cell" data-loshu="1"><span>1</span><strong id="loshu-1">-</strong></div>
+              <div class="loshu-cell" data-loshu="6"><span>6</span><strong id="loshu-6">-</strong></div>
+            </div>
+            <div id="missing-remedies" class="missing-remedies"></div>
+          </section>
+
+          <div id="validation-summary" class="validation-summary" role="status"></div>
+
+          <label class="json-loader">
+            Chart JSON
+            <textarea id="chart-json" spellcheck="false"></textarea>
+          </label>
+
+          <div class="button-row">
+            <button id="render-json" type="button">Render JSON</button>
+            <button id="load-sample" class="secondary" type="button">Sample</button>
+            <button id="clear-cache" class="secondary danger-button" type="button">Clear Cache</button>
+          </div>
+        </aside>
+
+        <section class="chart-stage" aria-label="Generated charts">
+          <div class="chart-toolbar">
+            <div class="tabs" role="tablist" aria-label="Chart type">
+              <button class="tab active" data-chart="D1" role="tab" aria-selected="true">D1</button>
+              <button class="tab" data-chart="D9" role="tab" aria-selected="false">D9</button>
+              <button class="tab" data-chart="D10" role="tab" aria-selected="false">D10</button>
+            </div>
+            <button id="download-svg" class="icon-button" type="button" title="Download SVG">
+              Download SVG
+            </button>
+          </div>
+          <div id="chart-title" class="chart-title"></div>
+          <div id="chart-output" class="chart-output"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js?v=3"></script>
+  </body>
+</html>
