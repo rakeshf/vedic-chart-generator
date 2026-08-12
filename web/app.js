@@ -59,56 +59,56 @@ const loshuRemedies = {
   1: {
     planet: "Sun",
     element: "Water",
-    focus: "Confidence, independence",
-    remedy: "Morning sunlight, clear self-discipline, and one visible leadership action daily.",
+    focus: "Confidence, independence, initiative",
+    remedy: "Take morning sunlight, make one decision independently, maintain self-discipline, and perform one visible leadership action daily.",
   },
   2: {
     planet: "Moon",
     element: "Earth",
-    focus: "Emotions, partnership",
-    remedy: "Calm water practice, respect mother figures, and steady emotional routines.",
+    focus: "Emotions, sensitivity, partnership",
+    remedy: "Practise patient listening, maintain emotional routines, cooperate without becoming dependent, and strengthen relationships with mother figures or supportive women.",
   },
   3: {
     planet: "Jupiter",
     element: "Wood",
-    focus: "Wisdom, expression",
-    remedy: "Study, teach, respect mentors, and keep a small yellow or growth symbol.",
+    focus: "Wisdom, creativity, expression",
+    remedy: "Study regularly, teach or share knowledge, respect mentors, practise confident expression, and keep a healthy growing plant.",
   },
   4: {
     planet: "Rahu",
     element: "Wood",
-    focus: "Stability, planning",
-    remedy: "Use written plans, avoid shortcuts, and complete practical tasks before new ones.",
+    focus: "Planning, structure, stability",
+    remedy: "Use a written schedule, preferably with a wooden pen, organise your workspace, avoid shortcuts, and finish existing tasks before starting new ones.",
   },
   5: {
     planet: "Mercury",
     element: "Earth",
-    focus: "Communication, balance",
-    remedy: "Practice precise speech, journaling, breath control, and consistent learning.",
+    focus: "Communication, adaptability, balance",
+    remedy: "Journal daily, speak clearly and precisely, practise breathwork, keep learning, and pause before making impulsive decisions.",
   },
   6: {
     planet: "Venus",
     element: "Metal",
-    focus: "Home, harmony",
-    remedy: "Keep surroundings clean, nurture relationships, and use beauty with simplicity.",
+    focus: "Home, responsibility, harmony",
+    remedy: "Keep your home clean and pleasant, honour commitments, nurture close relationships, and choose simple beauty instead of excess.",
   },
   7: {
     planet: "Ketu",
     element: "Metal",
-    focus: "Faith, intuition",
-    remedy: "Meditation, quiet donation, spiritual reading, and time away from noise.",
+    focus: "Introspection, faith, intuition",
+    remedy: "Meditate, spend regular time in silence, read spiritual or reflective material, donate discreetly, and avoid excessive isolation.",
   },
   8: {
     planet: "Saturn",
     element: "Earth",
-    focus: "Karma, patience",
-    remedy: "Serve elders or workers, stay punctual, and choose fairness in hard situations.",
+    focus: "Discipline, patience, responsibility",
+    remedy: "Be punctual, follow long-term routines, serve elders or workers, manage money responsibly, and act fairly during difficult situations.",
   },
   9: {
     planet: "Mars",
     element: "Fire",
-    focus: "Courage, action",
-    remedy: "Exercise, anger discipline, decisive action, and mindful use of red.",
+    focus: "Courage, energy, decisive action",
+    remedy: "Exercise regularly, control anger, take timely action, channel competitiveness constructively, and use red only as a subtle symbolic reminder.",
   },
 };
 
@@ -470,12 +470,10 @@ function renderNumerology() {
   const missing = Object.entries(loshu)
     .filter(([, count]) => count === 0)
     .map(([number]) => Number(number));
-  missingRemedies.innerHTML = missing.length
-    ? missing
-        .map(
-          (number) => {
-            const item = loshuRemedies[number];
-            return `<div class="remedy-row">
+  const missingRows = missing.map(
+    (number) => {
+      const item = loshuRemedies[number];
+      return `<div class="remedy-row">
               <strong>${number}</strong>
               <div>
                 <span class="remedy-meta">${escapeXml(item.planet)} / ${escapeXml(item.element)}</span>
@@ -483,9 +481,10 @@ function renderNumerology() {
                 <p>${escapeXml(item.remedy)}</p>
               </div>
             </div>`;
-          },
-        )
-        .join("")
+    },
+  );
+  missingRemedies.innerHTML = missingRows.length
+    ? missingRows.join("")
     : '<span class="muted-text">No missing Lo Shu numbers.</span>';
 }
 
