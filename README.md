@@ -44,15 +44,9 @@ output/
 
 ## Browser chart UI
 
-Open `web/index.html` in a browser to validate chart inputs and render D1, D9,
-and D10 North Indian charts from JavaScript. The city field can fill latitude
-and longitude for common Indian cities such as Nagpur.
-
-The UI accepts the `output/chart.json` produced by the CLI. Paste that JSON into
-the Chart JSON box and click Render JSON.
-
-For live recalculation from form inputs, run the Python API and open the served
-page:
+Run the Python API and open the served page to validate chart inputs and render
+D1, D9, and D10 North Indian charts. The city field can fill latitude and
+longitude for common Indian cities such as Delhi.
 
 ```bash
 uvicorn vedic_chart.api:app --reload --host 127.0.0.1 --port 8000

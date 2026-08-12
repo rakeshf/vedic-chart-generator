@@ -158,90 +158,6 @@ const cityAliases = new Map([
   ...indianCities.map((city) => [city.name.toLowerCase(), city.name]),
 ]);
 
-function dms(degrees, minutes = 0) {
-  return degrees + minutes / 60;
-}
-
-const sampleResult = {
-  birth: {
-    name: "Example Person",
-    date: "1990-01-01",
-    time: "12:00:00",
-    gender: "Unspecified",
-    timezone: "Asia/Kolkata",
-    city: "Delhi, India",
-    latitude: 28.6139,
-    longitude: 77.209,
-    utc: "1990-01-01T06:30:00+00:00",
-  },
-  options: { node: "true", ayanamsha: "lahiri" },
-  metadata: {
-    ayanamsha_degrees: 23.643940100655982,
-    house_system: "whole_sign",
-  },
-  charts: {
-    D1: {
-      ascendant: { sign: 4, sign_name: "Leo", degree: 11.117769, division: 1, longitude: 131.117769 },
-      houses: {
-        1: [{ name: "Asc", sign: 4, sign_name: "Leo", degree: 11.117769, retrograde: false }],
-        2: [
-          { name: "Sun", sign: 5, sign_name: "Virgo", degree: 11.339544, retrograde: false },
-          { name: "Mercury", sign: 5, sign_name: "Virgo", degree: 1.132492, retrograde: false },
-        ],
-        3: [
-          { name: "Moon", sign: 6, sign_name: "Libra", degree: 20.746445, retrograde: false },
-          { name: "Venus", sign: 6, sign_name: "Libra", degree: 9.131945, retrograde: false },
-          { name: "Saturn", sign: 6, sign_name: "Libra", degree: 20.388559, retrograde: false },
-        ],
-        4: [{ name: "Ketu", sign: 7, sign_name: "Scorpio", degree: 5.107137, retrograde: true }],
-        5: [
-          { name: "Mars", sign: 8, sign_name: "Sagittarius", degree: 1.378499, retrograde: false },
-          { name: "Jupiter", sign: 8, sign_name: "Sagittarius", degree: 10.782995, retrograde: false },
-        ],
-        10: [{ name: "Rahu", sign: 1, sign_name: "Taurus", degree: 5.107137, retrograde: true }],
-      },
-    },
-    D9: {
-      ascendant: { sign: 3, sign_name: "Cancer", degree: 10.059921, division: 9, longitude: 100.059921 },
-      houses: {
-        1: [
-          { name: "Asc", sign: 3, sign_name: "Cancer", degree: 10.059921, retrograde: false },
-          { name: "Jupiter", sign: 3, sign_name: "Cancer", degree: 7.046954, retrograde: false },
-        ],
-        2: [{ name: "Ketu", sign: 4, sign_name: "Leo", degree: 15.96423, retrograde: true }],
-        6: [{ name: "Venus", sign: 8, sign_name: "Sagittarius", degree: 22.187506, retrograde: false }],
-        7: [{ name: "Mercury", sign: 9, sign_name: "Capricorn", degree: 10.192432, retrograde: false }],
-        8: [{ name: "Rahu", sign: 10, sign_name: "Aquarius", degree: 15.96423, retrograde: true }],
-        10: [
-          { name: "Sun", sign: 0, sign_name: "Aries", degree: 12.055892, retrograde: false },
-          { name: "Moon", sign: 0, sign_name: "Aries", degree: 6.718004, retrograde: false },
-          { name: "Mars", sign: 0, sign_name: "Aries", degree: 12.406489, retrograde: false },
-          { name: "Saturn", sign: 0, sign_name: "Aries", degree: 3.497031, retrograde: false },
-        ],
-      },
-    },
-    D10: {
-      ascendant: { sign: 7, sign_name: "Scorpio", degree: 21.17769, division: 10, longitude: 231.17769 },
-      houses: {
-        1: [{ name: "Asc", sign: 7, sign_name: "Scorpio", degree: 21.17769, retrograde: false }],
-        2: [{ name: "Mars", sign: 8, sign_name: "Sagittarius", degree: 13.784988, retrograde: false }],
-        3: [{ name: "Venus", sign: 9, sign_name: "Capricorn", degree: 1.319451, retrograde: false }],
-        4: [{ name: "Rahu", sign: 10, sign_name: "Aquarius", degree: 21.071366, retrograde: true }],
-        5: [{ name: "Jupiter", sign: 11, sign_name: "Pisces", degree: 17.829949, retrograde: false }],
-        6: [
-          { name: "Moon", sign: 0, sign_name: "Aries", degree: 27.464449, retrograde: false },
-          { name: "Saturn", sign: 0, sign_name: "Aries", degree: 23.88559, retrograde: false },
-        ],
-        7: [{ name: "Mercury", sign: 1, sign_name: "Taurus", degree: 11.324925, retrograde: false }],
-        10: [
-          { name: "Sun", sign: 4, sign_name: "Leo", degree: 23.395435, retrograde: false },
-          { name: "Ketu", sign: 4, sign_name: "Leo", degree: 21.071366, retrograde: true },
-        ],
-      },
-    },
-  },
-};
-
 const state = {
   activeChart: "D1",
   result: null,
@@ -262,11 +178,8 @@ const latitudeInput = document.querySelector("#latitude");
 const longitudeInput = document.querySelector("#longitude");
 const timezoneInput = document.querySelector("#timezone");
 const summary = document.querySelector("#validation-summary");
-const chartJson = document.querySelector("#chart-json");
 const chartOutput = document.querySelector("#chart-output");
 const chartTitle = document.querySelector("#chart-title");
-const renderJsonButton = document.querySelector("#render-json");
-const loadSampleButton = document.querySelector("#load-sample");
 const clearCacheButton = document.querySelector("#clear-cache");
 const downloadButton = document.querySelector("#download-svg");
 const tabs = [...document.querySelectorAll(".tab")];
@@ -366,7 +279,6 @@ function clearChartCache() {
     .forEach((key) => localStorage.removeItem(key));
   savedNamesList.innerHTML = "";
   state.result = null;
-  chartJson.value = "";
   renderActiveChart();
   showValidation([], "Chart cache cleared.");
 }
@@ -389,7 +301,6 @@ function loadCachedName() {
 
   fillFormFromBirth(cached.birth);
   loadResult(cached.result);
-  chartJson.value = JSON.stringify(cached.result, null, 2);
   showValidation([], `Loaded saved chart for ${cached.birth.name}.`);
   return true;
 }
@@ -544,27 +455,6 @@ function formBirthData() {
   };
 }
 
-function isSameMomentAsSample(birth) {
-  return (
-    birth.date === sampleResult.birth.date &&
-    birth.time === sampleResult.birth.time &&
-    birth.timezone === sampleResult.birth.timezone &&
-    Math.abs(birth.latitude - sampleResult.birth.latitude) < 0.02 &&
-    Math.abs(birth.longitude - sampleResult.birth.longitude) < 0.02
-  );
-}
-
-function resultWithBirth(result, birth) {
-  return {
-    ...result,
-    birth: {
-      ...result.birth,
-      ...birth,
-      utc: result.birth.utc,
-    },
-  };
-}
-
 async function calculateChart(birth) {
   const response = await fetch("/api/chart", {
     method: "POST",
@@ -708,9 +598,9 @@ function validateBirthFields(data) {
 
 function validateChartResult(result) {
   const errors = [];
-  if (!result || typeof result !== "object") return ["Chart JSON must be an object."];
+  if (!result || typeof result !== "object") return ["Chart data must be an object."];
   if (!result.charts || typeof result.charts !== "object") {
-    return ["Chart JSON must include a charts object."];
+    return ["Chart data must include a charts object."];
   }
 
   for (const chartName of ["D1", "D9", "D10"]) {
@@ -766,7 +656,7 @@ function loadResult(result) {
   }
   state.result = result;
   setActiveChart("D1");
-  showValidation([], "Chart JSON validated and rendered.");
+  showValidation([], "Chart data validated and rendered.");
   renderNumerology();
   renderActiveChart();
 }
@@ -774,7 +664,6 @@ function loadResult(result) {
 function loadAndCacheResult(result, birth) {
   loadResult(result);
   cacheChartResult(birth, result);
-  chartJson.value = JSON.stringify(result, null, 2);
 }
 
 function downloadSvg() {
@@ -803,7 +692,6 @@ form.addEventListener("submit", async (event) => {
   const cached = cachedChartForBirth(birth);
   if (cached) {
     loadResult(cached.result);
-    chartJson.value = JSON.stringify(cached.result, null, 2);
     showValidation([], "Loaded chart from cache.");
     return;
   }
@@ -821,11 +709,6 @@ form.addEventListener("submit", async (event) => {
     loadAndCacheResult(result, birth);
     showValidation([], "Chart regenerated and saved to cache.");
   } catch (error) {
-    if (isSameMomentAsSample(birth)) {
-      loadAndCacheResult(resultWithBirth(sampleResult, birth), birth);
-      showValidation([], "API unavailable, rendered the saved sample chart.");
-      return;
-    }
     showValidation([error.message]);
   }
 });
@@ -836,21 +719,6 @@ nameInput.addEventListener("input", renderNumerology);
 nameInput.addEventListener("change", loadCachedName);
 nameInput.addEventListener("blur", loadCachedName);
 dateInput.addEventListener("input", renderNumerology);
-
-renderJsonButton.addEventListener("click", () => {
-  try {
-    const result = JSON.parse(chartJson.value);
-    loadResult(result);
-  } catch (error) {
-    showValidation([`Invalid JSON: ${error.message}`]);
-  }
-});
-
-loadSampleButton.addEventListener("click", () => {
-  chartJson.value = JSON.stringify(sampleResult, null, 2);
-  loadResult(sampleResult);
-  cacheChartResult(sampleResult.birth, sampleResult);
-});
 
 clearCacheButton.addEventListener("click", clearChartCache);
 

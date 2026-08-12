@@ -27,8 +27,7 @@ body {
 
 button,
 input,
-select,
-textarea {
+select {
   font: inherit;
 }
 
@@ -70,8 +69,7 @@ h1 {
   line-height: 1;
 }
 
-form,
-.json-loader {
+form {
   display: grid;
   gap: 12px;
 }
@@ -85,8 +83,7 @@ label {
 }
 
 input,
-select,
-textarea {
+select {
   width: 100%;
   border: 1px solid #c8d3cd;
   background: #ffffff;
@@ -97,18 +94,9 @@ textarea {
 }
 
 input:focus,
-select:focus,
-textarea:focus {
+select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
-}
-
-textarea {
-  min-height: 180px;
-  resize: vertical;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12px;
-  line-height: 1.45;
 }
 
 .field-grid,
