@@ -112,6 +112,18 @@ const loshuRemedies = {
   },
 };
 
+const kuaSuggestions = {
+  1: "Use water balance: keep routines calm, communicate clearly, study regularly, and choose quiet reflection before major decisions.",
+  2: "Use earth balance: keep the home steady, plan patiently, serve others practically, and avoid emotional over-dependence.",
+  3: "Use wood balance: exercise lightly, express ideas honestly, start healthy new habits, and stay flexible when plans change.",
+  4: "Use wood balance: organise priorities, keep learning, improve gradually, and use structure without becoming rigid.",
+  5: "Use centre balance: simplify the home, reduce clutter, keep steady routines, and follow the gender mapping for Kua 5 guidance.",
+  6: "Use metal balance: honour responsibility, keep financial order, lead calmly, and practise respectful authority.",
+  7: "Use metal balance: maintain boundaries, speak gently, review spending, and choose refinement over criticism.",
+  8: "Use earth balance: build discipline, save consistently, organise spaces, and commit to steady long-term work.",
+  9: "Use fire balance: show warmth, practise confidence, manage intensity, and use visibility without impatience.",
+};
+
 const indianCities = [
   { name: "Agra", state: "Uttar Pradesh", latitude: 27.1767, longitude: 78.0081 },
   { name: "Ahmedabad", state: "Gujarat", latitude: 23.0225, longitude: 72.5714 },
@@ -276,6 +288,9 @@ const dobNumber = document.querySelector("#dob-number");
 const dobCompound = document.querySelector("#dob-compound");
 const lifePathNumber = document.querySelector("#life-path-number");
 const lifePathCompound = document.querySelector("#life-path-compound");
+const kuaNumber = document.querySelector("#kua-number");
+const kuaGroup = document.querySelector("#kua-group");
+const kuaSuggestion = document.querySelector("#kua-suggestion");
 const nameBreakdown = document.querySelector("#name-breakdown");
 const missingRemedies = document.querySelector("#missing-remedies");
 const loshuCells = Object.fromEntries(
@@ -433,6 +448,28 @@ function calculateDobNumbers(dateValue) {
   };
 }
 
+function calculateKuaNumber(dateValue, genderValue) {
+  const [year = ""] = String(dateValue || "").split("-");
+  const gender = String(genderValue || "").toLowerCase();
+  if (!/^\d{4}$/.test(year) || !["male", "female"].includes(gender)) {
+    return { number: "-", group: gender ? "Enter DOB" : "Select gender" };
+  }
+
+  const yearSum = reduceNumber(
+    year.split("").reduce((sum, digit) => sum + Number(digit), 0),
+  );
+  let kua = gender === "male" ? 11 - yearSum : yearSum + 4;
+  kua = reduceNumber(kua);
+  if (kua === 5) kua = gender === "male" ? 2 : 8;
+
+  const eastGroup = [1, 3, 4, 9].includes(kua);
+  return {
+    number: kua,
+    group: eastGroup ? "East group" : "West group",
+    suggestion: kuaSuggestions[kua],
+  };
+}
+
 function calculateLoshu(dateValue) {
   const counts = Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => [number, 0]));
   for (const digit of dateDigits(dateValue)) {
@@ -444,6 +481,7 @@ function calculateLoshu(dateValue) {
 function renderNumerology() {
   const nameResult = calculateNameNumber(nameInput.value);
   const dobResult = calculateDobNumbers(dateInput.value);
+  const kuaResult = calculateKuaNumber(dateInput.value, genderInput.value);
   const loshu = calculateLoshu(dateInput.value);
 
   nameNumber.textContent = nameResult.reduced;
@@ -452,6 +490,9 @@ function renderNumerology() {
   dobCompound.textContent = `Day ${dobResult.dayTotal || "-"}`;
   lifePathNumber.textContent = dobResult.lifeReduced;
   lifePathCompound.textContent = `Total ${dobResult.lifeTotal || "-"}`;
+  kuaNumber.textContent = kuaResult.number;
+  kuaGroup.textContent = kuaResult.group;
+  kuaSuggestion.textContent = kuaResult.suggestion || "-";
   nameBreakdown.innerHTML = nameResult.entries.length
     ? nameResult.entries
         .map(
@@ -835,6 +876,7 @@ nameInput.addEventListener("input", renderNumerology);
 nameInput.addEventListener("change", loadCachedName);
 nameInput.addEventListener("blur", loadCachedName);
 dateInput.addEventListener("input", renderNumerology);
+genderInput.addEventListener("change", renderNumerology);
 
 renderJsonButton.addEventListener("click", () => {
   try {
