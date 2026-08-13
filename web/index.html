@@ -4,25 +4,25 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Birth Chart</title>
-    <link rel="stylesheet" href="styles.css?v=3" />
+    <link rel="stylesheet" href="styles.css?v=4" />
   </head>
   <body>
     <main class="app-shell">
       <section class="workspace">
         <aside class="control-panel" aria-label="Chart inputs">
-          <div>
+          <div class="brand-block">
             <p class="eyebrow">Vedic Chart Generator</p>
             <h1>Birth Chart</h1>
           </div>
 
           <form id="birth-form" novalidate>
-            <label>
+            <label class="span-2">
               Name
               <input id="name" name="name" list="saved-names" autocomplete="name" required />
               <datalist id="saved-names"></datalist>
             </label>
 
-            <div class="field-grid">
+            <div class="field-grid span-2">
               <label>
                 Date
                 <input id="date" name="date" type="date" required />
@@ -42,7 +42,7 @@
               </select>
             </label>
 
-            <label>
+            <label class="span-2">
               City
               <input
                 id="city"
@@ -54,7 +54,7 @@
               <datalist id="indian-cities"></datalist>
             </label>
 
-            <label>
+            <label class="span-2">
               Timezone
               <input
                 id="timezone"
@@ -64,7 +64,7 @@
               />
             </label>
 
-            <div class="field-grid">
+            <div class="field-grid span-2">
               <label>
                 Latitude
                 <input
@@ -91,9 +91,39 @@
               </label>
             </div>
 
-            <button type="submit">Generate Chart</button>
+            <button class="span-2" type="submit">Generate Chart</button>
           </form>
 
+          <div id="validation-summary" class="validation-summary" role="status"></div>
+
+          <label class="json-loader" hidden>
+            Chart JSON
+            <textarea id="chart-json" spellcheck="false"></textarea>
+          </label>
+
+          <div class="button-row">
+            <button id="render-json" type="button" hidden>Render JSON</button>
+            <button id="load-sample" class="secondary" type="button" hidden>Sample</button>
+            <button id="clear-cache" class="secondary danger-button" type="button" hidden>Clear Cache</button>
+          </div>
+        </aside>
+
+        <section class="chart-stage" aria-label="Generated charts">
+          <div class="chart-toolbar">
+            <div class="tabs" role="tablist" aria-label="Chart type">
+              <button class="tab active" data-chart="D1" role="tab" aria-selected="true">D1</button>
+              <button class="tab" data-chart="D9" role="tab" aria-selected="false">D9</button>
+              <button class="tab" data-chart="D10" role="tab" aria-selected="false">D10</button>
+            </div>
+            <button id="download-svg" class="icon-button" type="button" title="Download SVG">
+              Download SVG
+            </button>
+          </div>
+          <div id="chart-title" class="chart-title"></div>
+          <div id="chart-output" class="chart-output"></div>
+        </section>
+
+        <aside class="insights-panel" aria-label="Numerology insights">
           <section class="numerology-panel" aria-label="Chaldean numerology">
             <div class="panel-heading">
               <h2>Chaldean</h2>
@@ -143,38 +173,10 @@
             </div>
             <div id="missing-remedies" class="missing-remedies"></div>
           </section>
-
-          <div id="validation-summary" class="validation-summary" role="status"></div>
-
-          <label class="json-loader" hidden>
-            Chart JSON
-            <textarea id="chart-json" spellcheck="false"></textarea>
-          </label>
-
-          <div class="button-row">
-            <button id="render-json" type="button" hidden>Render JSON</button>
-            <button id="load-sample" class="secondary" type="button" hidden>Sample</button>
-            <button id="clear-cache" class="secondary danger-button" type="button" hidden>Clear Cache</button>
-          </div>
         </aside>
-
-        <section class="chart-stage" aria-label="Generated charts">
-          <div class="chart-toolbar">
-            <div class="tabs" role="tablist" aria-label="Chart type">
-              <button class="tab active" data-chart="D1" role="tab" aria-selected="true">D1</button>
-              <button class="tab" data-chart="D9" role="tab" aria-selected="false">D9</button>
-              <button class="tab" data-chart="D10" role="tab" aria-selected="false">D10</button>
-            </div>
-            <button id="download-svg" class="icon-button" type="button" title="Download SVG">
-              Download SVG
-            </button>
-          </div>
-          <div id="chart-title" class="chart-title"></div>
-          <div id="chart-output" class="chart-output"></div>
-        </section>
       </section>
     </main>
 
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
   </body>
 </html>
