@@ -40,11 +40,13 @@ textarea {
   width: min(1480px, 100%);
   margin: 0 auto;
   padding: 14px;
+  overflow-x: auto;
 }
 
 .workspace {
   display: grid;
   grid-template-columns: 330px minmax(460px, 1fr) 320px;
+  min-width: 1110px;
   min-height: calc(100vh - 28px);
   max-height: calc(100vh - 28px);
   background: #ffffff;
@@ -447,24 +449,12 @@ button.secondary:hover,
 }
 
 @media (max-width: 1180px) {
+  .app-shell {
+    padding-bottom: 18px;
+  }
+
   .workspace {
-    grid-template-columns: minmax(290px, 340px) minmax(0, 1fr);
-    max-height: none;
-    overflow: visible;
-  }
-
-  .insights-panel {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    border-top: 1px solid var(--border);
-    border-left: 0;
-    overflow: visible;
-  }
-
-  .control-panel,
-  .chart-stage {
-    overflow: visible;
+    width: 1110px;
   }
 }
 
@@ -475,7 +465,11 @@ button.secondary:hover,
 
   .workspace {
     grid-template-columns: 1fr;
+    width: 100%;
+    min-width: 0;
     min-height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .control-panel {
@@ -490,6 +484,9 @@ button.secondary:hover,
 
   .insights-panel {
     grid-template-columns: 1fr;
+    border-top: 1px solid var(--border);
+    border-left: 0;
+    overflow: visible;
   }
 
   .chart-toolbar {
