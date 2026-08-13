@@ -424,16 +424,18 @@ button.secondary:hover,
 
 .chart-output {
   display: grid;
-  place-items: center;
+  justify-items: center;
+  align-items: start;
   min-height: 0;
+  padding: 10px;
   overflow: auto;
   border: 1px solid var(--border);
   background: var(--paper);
 }
 
 .chart-output svg {
-  width: min(100%, 760px);
-  max-height: 100%;
+  width: min(100%, 720px);
+  max-height: calc(100vh - 128px);
   height: auto;
   display: block;
 }
@@ -493,6 +495,15 @@ button.secondary:hover,
   .chart-toolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .chart-output {
+    padding: 8px;
+  }
+
+  .chart-output svg {
+    width: min(100%, 600px);
+    max-height: none;
   }
 
   .tabs {
