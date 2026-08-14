@@ -572,6 +572,27 @@ function formatTimeInZone(date, timezone) {
   }).format(date);
 }
 
+function distanceKm(fromLatitude, fromLongitude, toLatitude, toLongitude) {
+  const earthRadiusKm = 6371;
+  const latitudeDelta = degreesToRadians(toLatitude - fromLatitude);
+  const longitudeDelta = degreesToRadians(toLongitude - fromLongitude);
+  const startLatitude = degreesToRadians(fromLatitude);
+  const endLatitude = degreesToRadians(toLatitude);
+  const haversine =
+    Math.sin(latitudeDelta / 2) ** 2 +
+    Math.cos(startLatitude) * Math.cos(endLatitude) * Math.sin(longitudeDelta / 2) ** 2;
+  return 2 * earthRadiusKm * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+}
+
+function nearestIndianCity(latitude, longitude) {
+  return indianCities
+    .map((city) => ({
+      ...city,
+      distance: distanceKm(latitude, longitude, city.latitude, city.longitude),
+    }))
+    .sort((a, b) => a.distance - b.distance)[0];
+}
+
 function renderRahuKalam() {
   const location = state.rahuLocation;
   if (!location) {
@@ -747,13 +768,16 @@ function useCurrentLocation() {
   rahuPlace.textContent = "Requesting browser location...";
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata";
-      rahuCityInput.value = "";
+      const matchedCity = nearestIndianCity(
+        position.coords.latitude,
+        position.coords.longitude,
+      );
+      rahuCityInput.value = matchedCity.name;
       setRahuLocation({
-        label: "Current location",
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        timezone,
+        label: `${matchedCity.name}, ${matchedCity.state}`,
+        latitude: matchedCity.latitude,
+        longitude: matchedCity.longitude,
+        timezone: "Asia/Kolkata",
       });
     },
     () => {
