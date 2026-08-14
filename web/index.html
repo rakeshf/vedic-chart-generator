@@ -3,18 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Birth Chart</title>
-    <link rel="stylesheet" href="styles.css?v=9" />
+    <title>Vedic Chart Generator</title>
+    <link rel="stylesheet" href="styles.css?v=11" />
   </head>
   <body>
     <main class="app-shell">
+      <header class="page-header">
+        <h1>Vedic Chart Generator</h1>
+      </header>
+
       <section class="workspace">
         <aside class="control-panel" aria-label="Chart inputs">
-          <div class="brand-block">
-            <p class="eyebrow">Vedic Chart Generator</p>
-            <h1>Birth Chart</h1>
-          </div>
-
           <form id="birth-form" novalidate>
             <label class="span-2">
               Name
@@ -124,6 +123,33 @@
         </section>
 
         <aside class="insights-panel" aria-label="Numerology insights">
+          <section class="rahu-panel" aria-label="Rahu Kalam today">
+            <div class="panel-heading">
+              <h2>Rahu Kalam</h2>
+              <span id="rahu-date">Today</span>
+            </div>
+            <div class="rahu-controls">
+              <label>
+                City
+                <input
+                  id="rahu-city"
+                  list="indian-cities"
+                  placeholder="Delhi"
+                  autocomplete="off"
+                />
+              </label>
+              <button id="use-current-location" class="secondary" type="button">Use Current Location</button>
+            </div>
+            <div class="rahu-time">
+              <strong id="rahu-time">-</strong>
+              <span id="rahu-place">Select city</span>
+            </div>
+            <div class="rahu-meta">
+              <span id="rahu-sunrise">Sunrise -</span>
+              <span id="rahu-sunset">Sunset -</span>
+            </div>
+          </section>
+
           <section class="numerology-panel" aria-label="Chaldean numerology">
             <div class="panel-heading">
               <h2>Chaldean</h2>
@@ -177,6 +203,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=8"></script>
   </body>
 </html>

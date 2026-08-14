@@ -257,6 +257,7 @@ const sampleResult = {
 const state = {
   activeChart: "D1",
   result: null,
+  rahuLocation: null,
 };
 
 const chartCacheKey = "vedicChart.cache.v3";
@@ -293,6 +294,13 @@ const kuaGroup = document.querySelector("#kua-group");
 const kuaSuggestion = document.querySelector("#kua-suggestion");
 const nameBreakdown = document.querySelector("#name-breakdown");
 const missingRemedies = document.querySelector("#missing-remedies");
+const rahuDate = document.querySelector("#rahu-date");
+const rahuTime = document.querySelector("#rahu-time");
+const rahuPlace = document.querySelector("#rahu-place");
+const rahuSunrise = document.querySelector("#rahu-sunrise");
+const rahuSunset = document.querySelector("#rahu-sunset");
+const rahuCityInput = document.querySelector("#rahu-city");
+const useCurrentLocationButton = document.querySelector("#use-current-location");
 const loshuCells = Object.fromEntries(
   [1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => [
     number,
@@ -478,6 +486,149 @@ function calculateLoshu(dateValue) {
   return counts;
 }
 
+function degreesToRadians(value) {
+  return (value * Math.PI) / 180;
+}
+
+function radiansToDegrees(value) {
+  return (value * 180) / Math.PI;
+}
+
+function normaliseDegrees(value) {
+  return ((value % 360) + 360) % 360;
+}
+
+function normaliseHours(value) {
+  return ((value % 24) + 24) % 24;
+}
+
+function todayPartsInTimeZone(timezone) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone || "Asia/Kolkata",
+    weekday: "long",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const valueFor = (type) => parts.find((part) => part.type === type)?.value;
+  return {
+    day: Number(valueFor("day")),
+    month: Number(valueFor("month")),
+    weekday: valueFor("weekday"),
+    year: Number(valueFor("year")),
+  };
+}
+
+function dayOfYear({ year, month, day }) {
+  const start = Date.UTC(year, 0, 0);
+  const current = Date.UTC(year, month - 1, day);
+  return Math.floor((current - start) / 86400000);
+}
+
+function calculateSunEventUtc(parts, latitude, longitude, isSunrise) {
+  const zenith = 90.833;
+  const n = dayOfYear(parts);
+  const lngHour = longitude / 15;
+  const t = n + ((isSunrise ? 6 : 18) - lngHour) / 24;
+  const meanAnomaly = 0.9856 * t - 3.289;
+  const trueLongitude = normaliseDegrees(
+    meanAnomaly +
+      1.916 * Math.sin(degreesToRadians(meanAnomaly)) +
+      0.02 * Math.sin(2 * degreesToRadians(meanAnomaly)) +
+      282.634,
+  );
+  let rightAscension = radiansToDegrees(
+    Math.atan(0.91764 * Math.tan(degreesToRadians(trueLongitude))),
+  );
+  rightAscension = normaliseDegrees(rightAscension);
+  rightAscension +=
+    Math.floor(trueLongitude / 90) * 90 - Math.floor(rightAscension / 90) * 90;
+  rightAscension /= 15;
+
+  const sinDec = 0.39782 * Math.sin(degreesToRadians(trueLongitude));
+  const cosDec = Math.cos(Math.asin(sinDec));
+  const cosHour =
+    (Math.cos(degreesToRadians(zenith)) -
+      sinDec * Math.sin(degreesToRadians(latitude))) /
+    (cosDec * Math.cos(degreesToRadians(latitude)));
+
+  if (cosHour > 1 || cosHour < -1) return null;
+
+  const hourAngle = isSunrise
+    ? 360 - radiansToDegrees(Math.acos(cosHour))
+    : radiansToDegrees(Math.acos(cosHour));
+  const localMeanTime = hourAngle / 15 + rightAscension - 0.06571 * t - 6.622;
+  const utcHour = normaliseHours(localMeanTime - lngHour);
+
+  return new Date(Date.UTC(parts.year, parts.month - 1, parts.day) + utcHour * 3600000);
+}
+
+function formatTimeInZone(date, timezone) {
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone: timezone || "Asia/Kolkata",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+}
+
+function renderRahuKalam() {
+  const location = state.rahuLocation;
+  if (!location) {
+    rahuDate.textContent = "Today";
+    rahuTime.textContent = "-";
+    rahuPlace.textContent = "Select Rahu city or use current location";
+    rahuSunrise.textContent = "Sunrise -";
+    rahuSunset.textContent = "Sunset -";
+    return;
+  }
+
+  const latitude = Number(location.latitude);
+  const longitude = Number(location.longitude);
+  const timezone = location.timezone || "Asia/Kolkata";
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    rahuDate.textContent = "Today";
+    rahuTime.textContent = "-";
+    rahuPlace.textContent = "Check Rahu location";
+    rahuSunrise.textContent = "Sunrise -";
+    rahuSunset.textContent = "Sunset -";
+    return;
+  }
+
+  try {
+    const parts = todayPartsInTimeZone(timezone);
+    const sunrise = calculateSunEventUtc(parts, latitude, longitude, true);
+    const sunset = calculateSunEventUtc(parts, latitude, longitude, false);
+    if (!sunrise || !sunset || sunset <= sunrise) {
+      throw new Error("Sunrise/sunset unavailable for this location.");
+    }
+
+    const segmentByWeekday = [8, 2, 7, 5, 6, 4, 3];
+    const weekday = new Date(Date.UTC(parts.year, parts.month - 1, parts.day)).getUTCDay();
+    const segment = segmentByWeekday[weekday];
+    const segmentLength = (sunset.getTime() - sunrise.getTime()) / 8;
+    const rahuStart = new Date(sunrise.getTime() + (segment - 1) * segmentLength);
+    const rahuEnd = new Date(rahuStart.getTime() + segmentLength);
+
+    rahuDate.textContent = `${parts.weekday}, ${String(parts.day).padStart(2, "0")}/${String(
+      parts.month,
+    ).padStart(2, "0")}/${parts.year}`;
+    rahuTime.textContent = `${formatTimeInZone(rahuStart, timezone)} - ${formatTimeInZone(
+      rahuEnd,
+      timezone,
+    )}`;
+    rahuPlace.textContent = location.label || `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+    rahuSunrise.textContent = `Sunrise ${formatTimeInZone(sunrise, timezone)}`;
+    rahuSunset.textContent = `Sunset ${formatTimeInZone(sunset, timezone)}`;
+  } catch {
+    rahuDate.textContent = "Today";
+    rahuTime.textContent = "-";
+    rahuPlace.textContent = "Check timezone and coordinates";
+    rahuSunrise.textContent = "Sunrise -";
+    rahuSunset.textContent = "Sunset -";
+  }
+}
+
 function renderNumerology() {
   const nameResult = calculateNameNumber(nameInput.value);
   const dobResult = calculateDobNumbers(dateInput.value);
@@ -558,6 +709,62 @@ function applyCityCoordinates() {
   timezoneInput.value = "Asia/Kolkata";
   showValidation([], `${city.name}, ${city.state}: latitude and longitude filled.`);
   return true;
+}
+
+function setRahuLocation(location) {
+  state.rahuLocation = location;
+  renderRahuKalam();
+}
+
+function applyRahuCity() {
+  const city = findCity(rahuCityInput.value);
+  if (!city) {
+    state.rahuLocation = null;
+    renderRahuKalam();
+    return false;
+  }
+
+  rahuCityInput.value = city.name;
+  setRahuLocation({
+    label: `${city.name}, ${city.state}`,
+    latitude: city.latitude,
+    longitude: city.longitude,
+    timezone: "Asia/Kolkata",
+  });
+  return true;
+}
+
+function useCurrentLocation() {
+  if (!navigator.geolocation) {
+    rahuDate.textContent = "Today";
+    rahuTime.textContent = "-";
+    rahuPlace.textContent = "Browser location is unavailable";
+    rahuSunrise.textContent = "Sunrise -";
+    rahuSunset.textContent = "Sunset -";
+    return;
+  }
+
+  rahuPlace.textContent = "Requesting browser location...";
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata";
+      rahuCityInput.value = "";
+      setRahuLocation({
+        label: "Current location",
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        timezone,
+      });
+    },
+    () => {
+      rahuDate.textContent = "Today";
+      rahuTime.textContent = "-";
+      rahuPlace.textContent = "Location permission not granted";
+      rahuSunrise.textContent = "Sunrise -";
+      rahuSunset.textContent = "Sunset -";
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 900000 },
+  );
 }
 
 function normaliseTime(value) {
@@ -877,6 +1084,12 @@ nameInput.addEventListener("change", loadCachedName);
 nameInput.addEventListener("blur", loadCachedName);
 dateInput.addEventListener("input", renderNumerology);
 genderInput.addEventListener("change", renderNumerology);
+rahuCityInput.addEventListener("change", applyRahuCity);
+rahuCityInput.addEventListener("blur", applyRahuCity);
+rahuCityInput.addEventListener("input", () => {
+  if (!rahuCityInput.value.trim()) setRahuLocation(null);
+});
+useCurrentLocationButton.addEventListener("click", useCurrentLocation);
 
 renderJsonButton.addEventListener("click", () => {
   try {
@@ -907,4 +1120,5 @@ for (const tab of tabs) {
 populateCityList();
 populateSavedNames();
 renderNumerology();
+renderRahuKalam();
 renderActiveChart();
