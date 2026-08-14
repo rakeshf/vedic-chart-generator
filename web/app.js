@@ -260,12 +260,8 @@ const state = {
   rahuLocation: null,
 };
 
-const chartCacheKey = "vedicChart.cache.v3";
-const nameIndexKey = "vedicChart.nameIndex.v3";
-
 const form = document.querySelector("#birth-form");
 const nameInput = document.querySelector("#name");
-const savedNamesList = document.querySelector("#saved-names");
 const dateInput = document.querySelector("#date");
 const timeInput = document.querySelector("#time");
 const genderInput = document.querySelector("#gender");
@@ -280,7 +276,6 @@ const chartOutput = document.querySelector("#chart-output");
 const chartTitle = document.querySelector("#chart-title");
 const renderJsonButton = document.querySelector("#render-json");
 const loadSampleButton = document.querySelector("#load-sample");
-const clearCacheButton = document.querySelector("#clear-cache");
 const downloadButton = document.querySelector("#download-svg");
 const tabs = [...document.querySelectorAll(".tab")];
 const nameNumber = document.querySelector("#name-number");
@@ -308,92 +303,6 @@ const loshuCells = Object.fromEntries(
   ]),
 );
 
-function readStorage(key, fallback) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) || fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function writeStorage(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-function normaliseCachePart(value) {
-  return String(value ?? "").trim().toLowerCase();
-}
-
-function cacheKeyForBirth(birth) {
-  return [
-    normaliseCachePart(birth.name),
-    normaliseCachePart(birth.date),
-    normaliseCachePart(birth.time),
-    normaliseCachePart(birth.gender),
-    normaliseCachePart(birth.timezone),
-    Number(birth.latitude).toFixed(6),
-    Number(birth.longitude).toFixed(6),
-  ].join("|");
-}
-
-function nameKey(name) {
-  return normaliseCachePart(name);
-}
-
-function populateSavedNames() {
-  const index = readStorage(nameIndexKey, {});
-  savedNamesList.innerHTML = Object.values(index)
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((entry) => `<option value="${escapeXml(entry.name)}">${escapeXml(entry.date || "")}</option>`)
-    .join("");
-}
-
-function cacheChartResult(birth, result) {
-  const cache = readStorage(chartCacheKey, {});
-  const index = readStorage(nameIndexKey, {});
-  const key = cacheKeyForBirth(birth);
-  const saved = {
-    birth,
-    result,
-    savedAt: new Date().toISOString(),
-  };
-
-  cache[key] = saved;
-  index[nameKey(birth.name)] = {
-    name: birth.name,
-    date: birth.date,
-    key,
-    savedAt: saved.savedAt,
-  };
-  writeStorage(chartCacheKey, cache);
-  writeStorage(nameIndexKey, index);
-  populateSavedNames();
-}
-
-function cachedChartForBirth(birth) {
-  const cached = readStorage(chartCacheKey, {})[cacheKeyForBirth(birth)] || null;
-  return cached && hasAscendantInD1(cached.result) ? cached : null;
-}
-
-function cachedChartForName(name) {
-  const index = readStorage(nameIndexKey, {});
-  const entry = index[nameKey(name)];
-  if (!entry) return null;
-  const cached = readStorage(chartCacheKey, {})[entry.key] || null;
-  return cached && hasAscendantInD1(cached.result) ? cached : null;
-}
-
-function clearChartCache() {
-  Object.keys(localStorage)
-    .filter((key) => key.startsWith("vedicChart."))
-    .forEach((key) => localStorage.removeItem(key));
-  savedNamesList.innerHTML = "";
-  state.result = null;
-  chartJson.value = "";
-  renderActiveChart();
-  showValidation([], "Chart cache cleared.");
-}
-
 function fillFormFromBirth(birth) {
   nameInput.value = birth.name || "";
   dateInput.value = birth.date || "";
@@ -404,17 +313,6 @@ function fillFormFromBirth(birth) {
   latitudeInput.value = Number.isFinite(Number(birth.latitude)) ? birth.latitude : "";
   longitudeInput.value = Number.isFinite(Number(birth.longitude)) ? birth.longitude : "";
   renderNumerology();
-}
-
-function loadCachedName() {
-  const cached = cachedChartForName(nameInput.value);
-  if (!cached) return false;
-
-  fillFormFromBirth(cached.birth);
-  loadResult(cached.result);
-  chartJson.value = JSON.stringify(cached.result, null, 2);
-  showValidation([], `Loaded saved chart for ${cached.birth.name}.`);
-  return true;
 }
 
 function reduceNumber(value) {
@@ -1042,9 +940,8 @@ function loadResult(result) {
   renderActiveChart();
 }
 
-function loadAndCacheResult(result, birth) {
+function loadGeneratedResult(result) {
   loadResult(result);
-  cacheChartResult(birth, result);
   chartJson.value = JSON.stringify(result, null, 2);
 }
 
@@ -1071,13 +968,6 @@ form.addEventListener("submit", async (event) => {
   }
 
   const birth = formBirthData();
-  const cached = cachedChartForBirth(birth);
-  if (cached) {
-    loadResult(cached.result);
-    chartJson.value = JSON.stringify(cached.result, null, 2);
-    showValidation([], "Loaded chart from cache.");
-    return;
-  }
 
   if (location.protocol === "file:") {
     showValidation([
@@ -1089,11 +979,11 @@ form.addEventListener("submit", async (event) => {
   showValidation([], "Calculating chart...");
   try {
     const result = await calculateChart(birth);
-    loadAndCacheResult(result, birth);
-    showValidation([], "Chart regenerated and saved to cache.");
+    loadGeneratedResult(result);
+    showValidation([], "Chart generated.");
   } catch (error) {
     if (isSameMomentAsSample(birth)) {
-      loadAndCacheResult(resultWithBirth(sampleResult, birth), birth);
+      loadGeneratedResult(resultWithBirth(sampleResult, birth));
       showValidation([], "API unavailable, rendered the saved sample chart.");
       return;
     }
@@ -1104,8 +994,6 @@ form.addEventListener("submit", async (event) => {
 cityInput.addEventListener("change", applyCityCoordinates);
 cityInput.addEventListener("blur", applyCityCoordinates);
 nameInput.addEventListener("input", renderNumerology);
-nameInput.addEventListener("change", loadCachedName);
-nameInput.addEventListener("blur", loadCachedName);
 dateInput.addEventListener("input", renderNumerology);
 genderInput.addEventListener("change", renderNumerology);
 rahuCityInput.addEventListener("change", applyRahuCity);
@@ -1127,10 +1015,7 @@ renderJsonButton.addEventListener("click", () => {
 loadSampleButton.addEventListener("click", () => {
   chartJson.value = JSON.stringify(sampleResult, null, 2);
   loadResult(sampleResult);
-  cacheChartResult(sampleResult.birth, sampleResult);
 });
-
-clearCacheButton.addEventListener("click", clearChartCache);
 
 downloadButton.addEventListener("click", downloadSvg);
 
@@ -1142,7 +1027,6 @@ for (const tab of tabs) {
 }
 
 populateCityList();
-populateSavedNames();
 renderNumerology();
 renderRahuKalam();
 renderActiveChart();
