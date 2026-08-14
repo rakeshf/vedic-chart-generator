@@ -1,5 +1,6 @@
 :root {
   color-scheme: light;
+  --page-min-width: 1110px;
   --ink: #1f2933;
   --muted: #52616f;
   --panel: #f8faf9;
@@ -20,9 +21,17 @@
   display: none !important;
 }
 
+html {
+  overflow-x: scroll;
+  overflow-y: auto;
+}
+
 body {
   margin: 0;
+  min-width: var(--page-min-width);
   min-height: 100vh;
+  overflow-x: scroll;
+  overflow-y: auto;
   background: #eef3f0;
   color: var(--ink);
   font-family:
@@ -37,21 +46,22 @@ textarea {
 }
 
 .app-shell {
-  width: min(1480px, 100%);
+  width: max(100%, var(--page-min-width));
+  max-width: 1480px;
   margin: 0 auto;
   padding: 14px;
-  overflow-x: auto;
+  overflow-x: visible;
 }
 
 .workspace {
   display: grid;
   grid-template-columns: 330px minmax(460px, 1fr) 320px;
-  min-width: 1110px;
+  align-items: start;
+  min-width: var(--page-min-width);
   min-height: calc(100vh - 28px);
-  max-height: calc(100vh - 28px);
   background: #ffffff;
   border: 1px solid var(--border);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .control-panel {
@@ -61,7 +71,7 @@ textarea {
   padding: 18px;
   background: var(--panel);
   border-right: 1px solid var(--border);
-  overflow: auto;
+  overflow: visible;
 }
 
 .brand-block {
@@ -201,16 +211,20 @@ button.secondary:hover,
   border: 1px solid var(--border);
   border-radius: 6px;
   background: #ffffff;
+  overflow: visible;
 }
 
 .insights-panel {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: auto;
+  min-height: calc(100vh - 30px);
   padding: 18px;
   background: var(--panel);
   border-left: 1px solid var(--border);
-  overflow: auto;
+  overflow: visible;
+  overflow-y: visible;
 }
 
 .panel-heading {
@@ -324,6 +338,7 @@ button.secondary:hover,
 .missing-remedies {
   display: grid;
   gap: 6px;
+  overflow: visible;
 }
 
 .remedy-row {
@@ -388,7 +403,7 @@ button.secondary:hover,
   padding: 18px;
   background: #fbfcfb;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .chart-toolbar {
@@ -437,7 +452,6 @@ button.secondary:hover,
 
 .chart-output svg {
   width: min(100%, 720px);
-  max-height: calc(100vh - 128px);
   height: auto;
   display: block;
 }
@@ -454,57 +468,12 @@ button.secondary:hover,
   }
 
   .workspace {
-    width: 1110px;
+    width: 100%;
   }
 }
 
 @media (max-width: 860px) {
   .app-shell {
     padding: 12px;
-  }
-
-  .workspace {
-    grid-template-columns: 1fr;
-    width: 100%;
-    min-width: 0;
-    min-height: auto;
-    max-height: none;
-    overflow: visible;
-  }
-
-  .control-panel {
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .brand-block {
-    display: grid;
-    gap: 4px;
-  }
-
-  .insights-panel {
-    grid-template-columns: 1fr;
-    border-top: 1px solid var(--border);
-    border-left: 0;
-    overflow: visible;
-  }
-
-  .chart-toolbar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .chart-output {
-    padding: 8px;
-  }
-
-  .chart-output svg {
-    width: min(100%, 600px);
-    max-height: none;
-  }
-
-  .tabs {
-    width: 100%;
-    grid-template-columns: repeat(3, 1fr);
   }
 }
