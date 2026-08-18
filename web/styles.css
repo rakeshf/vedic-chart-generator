@@ -447,7 +447,7 @@ button.secondary:hover,
 
 .chart-stage {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   gap: 10px;
   padding: 18px;
   background: #fbfcfb;
@@ -503,6 +503,55 @@ button.secondary:hover,
   width: min(100%, 720px);
   height: auto;
   display: block;
+}
+
+.planetary-positions {
+  min-width: 0;
+}
+
+.planetary-positions h2 {
+  margin: 4px 0 8px;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.positions-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  background: var(--paper);
+}
+
+.positions-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.positions-table th,
+.positions-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.positions-table thead th {
+  color: var(--muted);
+  background: #f3f7f5;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.positions-table tbody th {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.positions-table tbody tr:last-child th,
+.positions-table tbody tr:last-child td {
+  border-bottom: 0;
 }
 
 .empty-state {

@@ -26,6 +26,68 @@ const planetIcons = {
   Ketu: "Ke",
 };
 
+const signNames = [
+  "Aries",
+  "Taurus",
+  "Gemini",
+  "Cancer",
+  "Leo",
+  "Virgo",
+  "Libra",
+  "Scorpio",
+  "Sagittarius",
+  "Capricorn",
+  "Aquarius",
+  "Pisces",
+];
+
+const rasiLords = [
+  "Mars",
+  "Venus",
+  "Mercury",
+  "Moon",
+  "Sun",
+  "Mercury",
+  "Venus",
+  "Mars",
+  "Jupiter",
+  "Saturn",
+  "Saturn",
+  "Jupiter",
+];
+
+const nakshatras = [
+  ["Ashwini", "Ketu"],
+  ["Bharani", "Venus"],
+  ["Krittika", "Sun"],
+  ["Rohini", "Moon"],
+  ["Mrigashirsha", "Mars"],
+  ["Ardra", "Rahu"],
+  ["Punarvasu", "Jupiter"],
+  ["Pushya", "Saturn"],
+  ["Ashlesha", "Mercury"],
+  ["Magha", "Ketu"],
+  ["Purva Phalguni", "Venus"],
+  ["Uttara Phalguni", "Sun"],
+  ["Hasta", "Moon"],
+  ["Chitra", "Mars"],
+  ["Swati", "Rahu"],
+  ["Vishakha", "Jupiter"],
+  ["Anuradha", "Saturn"],
+  ["Jyeshtha", "Mercury"],
+  ["Mula", "Ketu"],
+  ["Purva Ashadha", "Venus"],
+  ["Uttara Ashadha", "Sun"],
+  ["Shravana", "Moon"],
+  ["Dhanishta", "Mars"],
+  ["Shatabhisha", "Rahu"],
+  ["Purva Bhadrapada", "Jupiter"],
+  ["Uttara Bhadrapada", "Saturn"],
+  ["Revati", "Mercury"],
+];
+
+const planetOrder = ["Asc", "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"];
+
 const chaldeanValues = {
   A: 1,
   I: 1,
@@ -273,6 +335,7 @@ const timezoneInput = document.querySelector("#timezone");
 const summary = document.querySelector("#validation-summary");
 const chartJson = document.querySelector("#chart-json");
 const chartOutput = document.querySelector("#chart-output");
+const planetaryPositions = document.querySelector("#planetary-positions");
 const chartTitle = document.querySelector("#chart-title");
 const renderJsonButton = document.querySelector("#render-json");
 const loadSampleButton = document.querySelector("#load-sample");
@@ -770,11 +833,6 @@ function normaliseHouses(houses) {
   return output;
 }
 
-function hasAscendantInD1(result) {
-  const firstHouse = normaliseHouses(result?.charts?.D1?.houses)[1];
-  return firstHouse.some((item) => item.name === "Asc");
-}
-
 function setActiveChart(chartName) {
   state.activeChart = chartName;
   tabs.forEach((item) => {
@@ -806,6 +864,87 @@ function formatDegree(degree) {
   const degrees = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return `${degrees}\u00b0 ${minutes}\u2032`;
+}
+
+function normaliseLongitude(longitude) {
+  return ((Number(longitude) % 360) + 360) % 360;
+}
+
+function nakshatraForLongitude(longitude) {
+  const index = Math.min(Math.floor(normaliseLongitude(longitude) / (360 / 27)), 26);
+  const [name, lord] = nakshatras[index];
+  return { name, lord };
+}
+
+function positionRows(chart) {
+  const planets = chart.planets || {};
+  const rows = planetOrder
+    .map((name) => {
+      if (name === "Asc" && !planets.Asc && chart.ascendant) {
+        return { name, ...chart.ascendant, retrograde: false };
+      }
+      return planets[name] ? { name, ...planets[name] } : null;
+    })
+    .filter(Boolean);
+
+  if (rows.length > 1 || !chart.houses) return rows;
+
+  const fromHouses = Object.values(normaliseHouses(chart.houses))
+    .flat()
+    .filter((item) => item?.name);
+  return planetOrder
+    .map((name) => fromHouses.find((item) => item.name === name))
+    .filter(Boolean);
+}
+
+function renderPlanetaryPositionsTable(chart) {
+  const rows = positionRows(chart);
+  if (!rows.length) return "";
+
+  const body = rows
+    .map((item) => {
+      const sign = Number.isInteger(item.sign) ? item.sign : Math.floor(normaliseLongitude(item.longitude) / 30);
+      const degree = Number.isFinite(Number(item.degree))
+        ? Number(item.degree)
+        : normaliseLongitude(item.longitude) % 30;
+      const longitude = Number.isFinite(Number(item.longitude)) ? Number(item.longitude) : sign * 30 + degree;
+      const nakshatra = item.nakshatra && item.nakshatra_lord
+        ? { name: item.nakshatra, lord: item.nakshatra_lord }
+        : nakshatraForLongitude(longitude);
+      const rasi = item.sign_name || signNames[sign] || "-";
+      const rasiLord = item.rasi_lord || rasiLords[sign] || "-";
+      const position = `${rasi} ${formatDegree(degree)}`;
+      const planet = `${item.name}${item.retrograde ? " \u211e" : ""}`;
+
+      return `<tr>
+        <th scope="row">${escapeXml(planet)}</th>
+        <td>${escapeXml(position)}</td>
+        <td>${escapeXml(formatDegree(degree))}</td>
+        <td>${escapeXml(rasi)}</td>
+        <td>${escapeXml(rasiLord)}</td>
+        <td>${escapeXml(nakshatra.name)}</td>
+        <td>${escapeXml(nakshatra.lord)}</td>
+      </tr>`;
+    })
+    .join("");
+
+  return `<h2>Planetary Positions at Birth Time</h2>
+    <div class="positions-table-wrap">
+      <table class="positions-table">
+        <thead>
+          <tr>
+            <th scope="col">Planet</th>
+            <th scope="col">Positions</th>
+            <th scope="col">Degrees</th>
+            <th scope="col">Rasi</th>
+            <th scope="col">Rasi Lord</th>
+            <th scope="col">Nakshatra</th>
+            <th scope="col">Nakshatra Lord</th>
+          </tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
 }
 
 function planetLabel(item) {
@@ -910,6 +1049,7 @@ function renderActiveChart() {
   if (!state.result) {
     chartTitle.textContent = "";
     chartOutput.innerHTML = '<div class="empty-state">Enter details or paste chart JSON.</div>';
+    planetaryPositions.innerHTML = "";
     return;
   }
 
@@ -925,6 +1065,7 @@ function renderActiveChart() {
     .filter(Boolean)
     .join(" | ");
   chartOutput.innerHTML = renderNorthIndianSvg(chart, title);
+  planetaryPositions.innerHTML = renderPlanetaryPositionsTable(chart);
 }
 
 function loadResult(result) {

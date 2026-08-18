@@ -6,6 +6,41 @@ SIGNS = (
     "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
 )
 
+RASI_LORDS = (
+    "Mars", "Venus", "Mercury", "Moon", "Sun", "Mercury",
+    "Venus", "Mars", "Jupiter", "Saturn", "Saturn", "Jupiter",
+)
+
+NAKSHATRAS = (
+    ("Ashwini", "Ketu"),
+    ("Bharani", "Venus"),
+    ("Krittika", "Sun"),
+    ("Rohini", "Moon"),
+    ("Mrigashirsha", "Mars"),
+    ("Ardra", "Rahu"),
+    ("Punarvasu", "Jupiter"),
+    ("Pushya", "Saturn"),
+    ("Ashlesha", "Mercury"),
+    ("Magha", "Ketu"),
+    ("Purva Phalguni", "Venus"),
+    ("Uttara Phalguni", "Sun"),
+    ("Hasta", "Moon"),
+    ("Chitra", "Mars"),
+    ("Swati", "Rahu"),
+    ("Vishakha", "Jupiter"),
+    ("Anuradha", "Saturn"),
+    ("Jyeshtha", "Mercury"),
+    ("Mula", "Ketu"),
+    ("Purva Ashadha", "Venus"),
+    ("Uttara Ashadha", "Sun"),
+    ("Shravana", "Moon"),
+    ("Dhanishta", "Mars"),
+    ("Shatabhisha", "Rahu"),
+    ("Purva Bhadrapada", "Jupiter"),
+    ("Uttara Bhadrapada", "Saturn"),
+    ("Revati", "Mercury"),
+)
+
 
 @dataclass(frozen=True)
 class VargaPosition:
@@ -14,6 +49,9 @@ class VargaPosition:
     degree: float
     division: int
     longitude: float
+    rasi_lord: str
+    nakshatra: str
+    nakshatra_lord: str
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -25,12 +63,17 @@ def _normalise(longitude: float) -> float:
 
 def _position(sign: int, degree: float, division: int) -> VargaPosition:
     degree = min(max(degree, 0.0), 30.0 - 1e-12)
+    longitude = sign * 30.0 + degree
+    nakshatra, nakshatra_lord = NAKSHATRAS[min(int(longitude / (360.0 / 27.0)), 26)]
     return VargaPosition(
         sign=sign,
         sign_name=SIGNS[sign],
         degree=degree,
         division=division,
-        longitude=sign * 30.0 + degree,
+        longitude=longitude,
+        rasi_lord=RASI_LORDS[sign],
+        nakshatra=nakshatra,
+        nakshatra_lord=nakshatra_lord,
     )
 
 
